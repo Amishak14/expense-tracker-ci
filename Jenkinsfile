@@ -38,7 +38,7 @@ pipeline {
 }
      stage("Docker Build frontend") {
             steps {
-                binaryBuild(buildConfigName: appName2, buildFromPath: ".")
+                binaryBuild(buildConfigName: appName2, buildFromPath: "./client")
             }
         }
       stage("Tag image") {
