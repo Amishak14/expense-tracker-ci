@@ -6,8 +6,8 @@ retriever: modernSCM(
   ]
 )
 
-appName1 = "frontend-buildconfig"
-appName2 = "backend-buildconfig"
+appName1 = "backend-buildconfig"
+appName2 = "frontend-buildconfig"
 
 pipeline {
     agent any
