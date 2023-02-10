@@ -6,12 +6,8 @@ retriever: modernSCM(
   ]
 )
 
- 
-
-// appName1 = "amisha-expense-tracker-backend-buildconfig"
-// appName2= "amisha-expense-tracker-frontend-buildconfig"
-
- 
+appName1 = "frontend-buildconfig"
+appName2 = "backend-buildconfig"
 
 pipeline {
     agent any
@@ -21,77 +17,48 @@ pipeline {
 //                 checkout scm
 //             }
 //         }
-
-        stage("Docker build backend"){
+        stage("Docker Build backend") {
             steps {
-              script{
-                openshift.withCluster(){
-                  openshift.withProject("$PROJECT_NAME"){
-                    openshift.selector("bc","amisha-expense-tracker-backend-buildconfig").startBuild("--wait")
-                  }
-                }
-              }
+                binaryBuild(buildConfigName: appName1, buildFromPath: ".")
             }
         }
-
+      
        stage("Tag backend image") {
        steps{
     tagImage([
             sourceImagePath: "amisha-jenkins",
-            sourceImageName: "expense-tracker-backend",
+            sourceImageName: "node-backend",
             sourceImageTag : "latest",
             toImagePath: "amisha-jenkins",
-            toImageName    : "expense-tracker-backend",
+            toImageName    : "node-backend",
             toImageTag     : "${env.BUILD_NUMBER}"
-
+      
     ])
        }
-       }
-      
-      
-      stage("Docker build frontend"){
+}
+     stage("Docker Build frontend") {
             steps {
-              script{
-                openshift.withCluster(){
-                  openshift.withProject("$PROJECT_NAME"){
-                    openshift.selector("bc","amisha-expense-tracker-frontend-buildconfig").startBuild("--wait")
-                  }
-                }
-              }
+                binaryBuild(buildConfigName: appName2, buildFromPath: ".")
             }
         }
-      
-      stage("Tag frontend image") {
+      stage("Tag image") {
        steps{
     tagImage([
             sourceImagePath: "amisha-jenkins",
-            sourceImageName: "expense-tracker-frontend",
+            sourceImageName: "node-frontend",
             sourceImageTag : "latest",
             toImagePath: "amisha-jenkins",
-            toImageName    : "expense-tracker-frontend",
+            toImageName    : "node-frontend",
             toImageTag     : "${env.BUILD_NUMBER}"
-
+      
     ])
        }
-       }
+}
       
-      stage("Trigger Deployment Update Pipeline"){
+       stage("Trigger Deployment Pipeline"){
         steps{
-          build job:'tag-pipeline' , parameters: [string(name: 'DOCKERTAG',value: env.BUILD_NUMBER)]
+          build job:'expense-tracker-cd-pipeline' , parameters: [string(name: 'TAG',value: env.BUILD_NUMBER)]
         }
       }
-      
-//       stage("deploy the application") {
-//         steps {
-//             script {
-//                 openshift.withCluster() {
-//                     openshift.withProject("$PROJECT_NAME") {
-//                         echo "Using project: ${openshift.project()}"
-//                          sh 'sh -x $WORKSPACE/backend-deployment.sh'
-//                     }
-//                  }
-//             }
-//         } 
-//     }  
-   }   
-}   
+    }
+}
